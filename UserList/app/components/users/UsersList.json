@@ -1,0 +1,94 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "name": "Jon Wild",
+            "email": "jon.wild@gmail.com",
+            "number": "9475384753",
+            "city": "Paris",
+            "zip": "1583",
+            "picture": "Ganesh"
+        },
+        {
+            "id": 2,
+            "name": "Ron Wild",
+            "email": "ron.wild@gmail.com",
+            "number": "7592955374",
+            "city": "Madrid",
+            "zip": "6576",
+            "picture": "pexels_photo"
+        },
+        {
+            "id": 3,
+            "name": "Non Wild",
+            "email": "non.wild@gmail.com",
+            "number": "9659372967",
+            "city": "London",
+            "zip": "5738",
+            "picture": "rose_blue_flower"
+        },
+        {
+            "id": 4,
+            "name": "Gon Wild",
+            "email": "gon.wild@gmail.com",
+            "number": "9035286636",
+            "city": "Barcelona",
+            "zip": "7453",
+            "picture": "Swan_large"
+        },
+        {
+            "id": 5,
+            "name": "Don Wild",
+            "email": "don.wild@gmail.com",
+            "number": "94529662436",
+            "city": "Jaipur",
+            "zip": "9544",
+            "picture": "thumb_audio"
+        },
+        {
+            "id": 6,
+            "name": "Aon Wild",
+            "email": "aon.wild@gmail.com",
+            "number": "9846353553",
+            "city": "Mumbai",
+            "zip": "9572",
+            "picture": "Ganesh"
+        },
+        {
+            "id": 7,
+            "name": "Won Wild",
+            "email": "won.wild@gmail.com",
+            "number": "9946386628",
+            "city": "Delhi",
+            "zip": "2047",
+            "picture": "pexels_photo"
+        },
+        {
+            "id": 8,
+            "name": "Ton Wild",
+            "email": "ton.wild@gmail.com",
+            "number": "9893583624",
+            "city": "Toranto",
+            "zip": "4573",
+            "picture": "rose_blue_flower"
+        },
+        {
+            "id": 9,
+            "name": "Son Wild",
+            "email": "son.wild@gmail.com",
+            "number": "9475454753",
+            "city": "New York",
+            "zip": "2333",
+            "picture": "Swan_large"
+        },
+        {
+            "id": 10,
+            "name": "Mon Wild",
+            "email": "mon.wild@gmail.com",
+            "number": "9849845243",
+            "city": "",
+            "zip": "1343",
+            "picture": "thumb_audio"
+        }
+    ]
+}
