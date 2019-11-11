@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, TouchableHighlight, Modal, Image, PermissionsAndroid} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Image, FlatList, Dimensions, Platform, PermissionsAndroid} from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { CameraKitGalleryView } from 'react-native-camera-kit';
 
@@ -8,166 +8,160 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      pickerSelection: 'Default value!',
-      pickerDisplayed: false,
-      cameraImage: null,
-      images: []
+      images: {},
+      selectionComplete: false,
+      croppedImage: null
   };
 }
 
-  togglePicker() {
-    this.setState({
-      pickerDisplayed: !this.state.pickerDisplayed
-    })
-  }
-    
-  choosePhoto() {
-    ImagePicker.openPicker({ 
-      multiple: true,
-    }).then(images => {
-      this.setState({
-      images: images.map(image => {
-        return {uri: image.path};
-      })
-    })}
-    );
-  }
-
-  async renderImages() {
-    const checkStoragePermission = PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
-    if (checkStoragePermission === PermissionsAndroid.RESULTS.GRANTED) {
-        alert("You've access for the gallery");
-    } else {
-        try {
-            const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-                {
-                    'title': 'Image Picker App required Gallery permission',
-                    'message': 'We required gallery permission ' +
-                        'Please grant us.'
-                }
-            )
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              <CameraKitGalleryView
-              ref={gallery => this.gallery = gallery}
-              style={{flex: 1, marginTop: 20}}
-              minimumInteritemSpacing={10}
-              minimumLineSpacing={10}
-              columnCount={3}
-              selectedImages={this.state.images}
-              onTapImage={event => {
-                console.log(event);
-              }}/>
-            } else {
-                alert("You don't have access for the gallery");
-            }
-        } catch (err) {
-            alert(err)
-        }
+componentWillMount() {
+  if (Platform.OS === 'android') {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Image Picker App Gallery Permission',
+          message:
+            'Image Picker App needs access to your gallery ',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the gallery');
+      } else {
+        console.log('gallery permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
     }
-    // if (PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE) === PermissionsAndroid.RESULTS.GRANTED) {
-    //   />
-    // } else {
-    //   console.log("something went wrong");
-    // }
   }
-    
-  takePhoto() {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-  }).then(image => {
-    console.log(image.path);
-    this.setState({ cameraImage: image.path });
-  });
-  }
-    
-  setPickerValue(newValue) {
-    this.setState({
-      pickerSelection: newValue
-    })
-    if (newValue === 'gallery') this.choosePhoto();
-    else this.takePhoto();
-    this.togglePicker();
-  }
+}
 
-//   renderItem(item) {
-//     console.log("item: " + item.uri);
-//     return (
-//         <TouchableOpacity  
-//             style={{flex:1/3,
-//             aspectRatio:1}}>
-//             <Image style={{flex: 1}} resizeMode='cover' source={{ uri: item.uri }}></Image>
-//         </TouchableOpacity>
-//     )
-// }
-
-  render() {
-    const pickerValues = [
-      {
-        title: 'Gallery',
-        value: 'gallery'
-      },
-      {
-        title: 'Camera',
-        value: 'camera'
-      },
-    ]
-    
-    return(
-      <View style={styles.container}>
-        { this.state.cameraImage ? <Image source={{ uri: this.state.cameraImage }} style={{ height: 400, width: 400}} /> : null }
-        { this.state.images.length > 0 ? this.renderImages() : null}
-        <TouchableOpacity style={styles.button} onPress={() => this.togglePicker()}>
-          <Text style={styles.buttonText}>Choose Photo</Text>
-        </TouchableOpacity>
-        <Modal visible={this.state.pickerDisplayed} animationType={"slide"} transparent={true}>
-          <View style={styles.pickerStyle}>
-            <Text>Please pick a value</Text>
-            { pickerValues.map((value, index) => {
-              return <TouchableHighlight key={index} onPress={() => this.setPickerValue(value.value)} style={{ paddingTop: 4, paddingBottom: 4 }}>
-                  <Text>{ value.title }</Text>
-                </TouchableHighlight>
-            })}
-            <TouchableHighlight onPress={() => this.togglePicker()} style={{ paddingTop: 4, paddingBottom: 4 }}>
-              <Text style={{ color: '#999' }}>Cancel</Text>
-            </TouchableHighlight>
-          </View>
-        </Modal>
-      </View>
+  renderImages() {
+    if (!this.state.selectionComplete) 
+    return (<CameraKitGalleryView
+                ref={gallery => this.gallery = gallery}
+                style={{flex: 1, marginTop: 20}}
+                minimumInteritemSpacing={10}
+                minimumLineSpacing={10}
+                columnCount={3}
+                selectedImages={Object.keys(this.state.images)}
+                onTapImage={event => {
+                  const uri = event.nativeEvent.selected;
+                  console.log("Tapped on an image: " + uri);
+                  if (this.state.images[uri]) {
+                    delete this.state.images[uri];
+                } else {
+                    this.state.images[uri] = true;
+                }
+                this.setState({ images: { ...this.state.images } });
+              }
+            }/>
     );
   }
+
+  showFullImage(item) {
+    ImagePicker.openCropper({
+        path: `file://${item}`
+    })
+    .then(image => {
+        this.setState({ croppedImage: image });
+    })
+    .catch(e => {
+        console.log(e);
+    });
+  }
+
+  showCroppedImage() {
+    const { croppedImage } = this.state;
+    return (
+        croppedImage && (
+            <Image
+                source={{ uri: croppedImage.path }}
+                style={{
+                    width: Dimensions.get('window').width - 32,
+                    height: Dimensions.get('window').width,
+                    marginTop: 16,
+                    marginLeft: 16
+                }}
+            />
+        )
+    );
+}
+
+  renderSelectedImages() {
+    const selectedImages = Object.keys(this.state.images);
+    return (
+      <View style={{ flex: 1,
+      margin: 5 }}>
+        <FlatList
+        numColumns={3}
+          data={selectedImages}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item, index }) => (
+          <TouchableOpacity
+            style={{ flex: 1/3, aspectRatio: 1}}
+            onPress={() => this.showFullImage(item)}>
+            <Image
+              source={{
+                uri: `file://${item}`
+              }}
+              style={{
+                height: 100,
+                width: 100,
+                overflow: "visible",
+                marginLeft: index > 0 ? 16 : 0
+              }}
+            />
+          </TouchableOpacity>
+        )}
+      />
+      </View>
+    )
+  }
+
+  renderDoneButton() {
+    return (<TouchableOpacity
+        style={[styles.button, { bottom: 10 }]}
+        onPress={() => this.setState({ selectionComplete: true })}>
+        <Text style={styles.buttonText}>Done</Text>
+      </TouchableOpacity>
+    );
+  }
+
+render() {
+  return (
+    <View style={styles.container}>
+      {this.renderImages()}
+      { Object.keys(this.state.images).length > 0 && !this.state.selectionComplete ? 
+      this.renderDoneButton() : null }
+      {this.state.selectionComplete && this.renderSelectedImages()}
+      {this.showCroppedImage()}
+    </View>
+  );
+}
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    alignItems: 'center'
+    flex: 1,
   },
-  button: {
-    backgroundColor: 'blue',
-    alignItems: 'center',
-    justifyContent: 'center',
+  button: {
+    backgroundColor: 'blue',
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
     position: 'absolute',
-    height: 40,
-    width: 200,
-    padding: 5,
-    borderRadius: 5,
-    bottom: 10,
+    height: 40,
+    width: 200,
+    padding: 5,
+    borderRadius: 5,
+    bottom: 60,
   },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 20
-  },
-  pickerStyle: {
-    margin: 20,
-    padding: 20,
-    backgroundColor: '#efefef',
-    bottom: 0,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-    position: 'absolute'
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
   }
 });
